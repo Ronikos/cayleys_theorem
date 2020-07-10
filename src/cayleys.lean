@@ -23,49 +23,20 @@ begin
    let F := λ (p : perm X), ({
       to_fun := h.1 ∘ p.1 ∘ h.2,
       inv_fun := h.1 ∘ p.2 ∘ h.2,
-      left_inv := λ y, by 
-        calc (h.to_fun ∘ p.inv_fun ∘ h.inv_fun ∘ h.to_fun ∘ p.to_fun ∘ h.inv_fun) y
-            = (h.to_fun ∘ p.inv_fun ∘ (h.inv_fun ∘ h.to_fun) ∘ p.to_fun ∘ h.inv_fun) y : rfl
-        ... = (h.to_fun ∘ p.inv_fun ∘ id ∘ p.to_fun ∘ h.inv_fun) y : by rw left_inverse.id h.3
-        ... = (h.to_fun ∘ (p.inv_fun ∘ p.to_fun) ∘ h.inv_fun) y : rfl 
-        ... = (h.to_fun ∘ id ∘ h.inv_fun) y : by rw left_inverse.id p.3
-        ... = (h.to_fun ∘ h.inv_fun) y : rfl
-        ... = id y : by rw right_inverse.id h.4,
-      right_inv := λ y, by 
-         calc (h.to_fun ∘ p.to_fun ∘ h.inv_fun ∘ h.to_fun ∘ p.inv_fun ∘ h.inv_fun) y 
-             = (h.to_fun ∘ p.to_fun ∘ (h.inv_fun ∘ h.to_fun) ∘ p.inv_fun ∘ h.inv_fun) y : rfl
-         ... = (h.to_fun ∘ p.to_fun ∘ id ∘ p.inv_fun ∘ h.inv_fun) y : by rw left_inverse.id h.3
-         ... = (h.to_fun ∘ (p.to_fun ∘ p.inv_fun) ∘ h.inv_fun) y : rfl
-         ... = (h.to_fun ∘ id ∘ h.inv_fun) y : by rw left_inverse.id p.4
-         ... = (h.to_fun ∘ h.inv_fun) y : rfl
-         ... = id y : by rw left_inverse.id h.4
-         ... = y : rfl,
+      left_inv := λ y, by simp [left_inverse.id h.3, left_inverse.id p.3, right_inverse.id h.4],
+      right_inv := λ y, by simp [left_inverse.id h.3, left_inverse.id p.4, left_inverse.id h.4],
    } : perm Y),
    let G := λ (p : perm Y), ({
       to_fun := h.2 ∘ p.1 ∘ h.1,
       inv_fun := h.2 ∘ p.2 ∘ h.1,
-      left_inv := λ y, by 
-         calc (h.inv_fun ∘ p.inv_fun ∘ h.to_fun ∘ h.inv_fun ∘ p.to_fun ∘ h.to_fun) y
-             = (h.inv_fun ∘ p.inv_fun ∘ (h.to_fun ∘ h.inv_fun) ∘ p.to_fun ∘ h.to_fun) y : rfl
-         ... = (h.inv_fun ∘ p.inv_fun ∘ id ∘ p.to_fun ∘ h.to_fun) y : by rw right_inverse.id h.4
-         ... = (h.inv_fun ∘ (p.inv_fun ∘ p.to_fun) ∘ h.to_fun) y : rfl
-         ... = (h.inv_fun ∘ id ∘ h.to_fun) y : by rw left_inverse.id p.3
-         ... = (h.inv_fun ∘ h.to_fun) y : rfl
-         ... = id y : by rw left_inverse.id h.3,
-      right_inv := λ y, by 
-         calc (h.inv_fun ∘ p.to_fun ∘ h.to_fun ∘ h.inv_fun ∘ p.inv_fun ∘ h.to_fun) y 
-             = (h.inv_fun ∘ p.to_fun ∘ (h.to_fun ∘ h.inv_fun) ∘ p.inv_fun ∘ h.to_fun) y : rfl
-         ... = (h.inv_fun ∘ p.to_fun ∘ id ∘ p.inv_fun ∘ h.to_fun) y : by rw right_inverse.id h.4
-         ... = (h.inv_fun ∘ (p.to_fun ∘ p.inv_fun) ∘ h.to_fun) y : rfl
-         ... = (h.inv_fun ∘ id ∘ h.to_fun) y : by rw right_inverse.id p.4
-         ... = (h.inv_fun ∘ h.to_fun) y : rfl
-         ... = id y : by rw left_inverse.id h.3
-         ... = y : rfl
+      left_inv := λ y, by simp [right_inverse.id h.4, left_inverse.id p.3, right_inverse.id h.3],
+      right_inv := λ y, by simp [right_inverse.id h.4, left_inverse.id p.4, right_inverse.id h.3],
    } : perm X),
    have leftinv : left_inverse G F,
    {
       intro p,
       apply perms_eq_iff_fun_eq _ _,
+      -- simp [right_inverse.id h.3], -- doesnt work ??
       calc (G (F p)).to_fun = (h.inv_fun ∘ h.to_fun) ∘ p.to_fun ∘ h.inv_fun ∘ h.to_fun : rfl 
       ... = id ∘ p.to_fun ∘ h.inv_fun ∘ h.to_fun : by rw right_inverse.id h.3
       ... = p.to_fun ∘ (h.inv_fun ∘ h.to_fun) : rfl 
@@ -85,15 +56,14 @@ begin
       intros p q,
       have HH := p * q,
       apply perms_eq_iff_fun_eq _ _,
-      calc (F (p * q)).to_fun = h.to_fun ∘ p.to_fun ∘ h.inv_fun ∘ h.to_fun ∘ q.to_fun ∘ h.inv_fun : conj_comp h p.to_fun q.to_fun
-      ... = (F p * F q).to_fun : rfl
+      apply conj_comp h p.to_fun q.to_fun,
    },
    exact ⟨F, G, leftinv, rightinv, perm_mul⟩,
 end
 
-lemma group_fin_iso (G : Type u) [group G] [fintype G] : G ≃* fin n := 
-begin 
-   sorry,
-end
+-- lemma group_fin_iso (G : Type u) [group G] [fintype G] : G ≃* fin n := 
+-- begin 
+--    sorry,
+-- end
 
 end equiv.perm
