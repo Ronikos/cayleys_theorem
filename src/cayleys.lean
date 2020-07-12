@@ -11,14 +11,14 @@ open equiv function subgroup
 
 variables {α : Type u}
 
-lemma perms_eq_iff_fun_eq {X : Type u} (p : perm X) (q : perm X) (h : p.to_fun = q.to_fun) : p = q := 
+lemma perms_eq_fun_eq {X : Type u} (p : perm X) (q : perm X) (h : p.to_fun = q.to_fun) : p = q := 
 begin 
    apply perm.ext,
    intro x,
    exact congr_fun h x,
 end 
 
-lemma fakecayleys {X : Type u} {Y : Type v} (h : X ≃ Y) : perm X ≃* perm Y :=
+lemma notcayleys {X : Type u} {Y : Type v} (h : X ≃ Y) : perm X ≃* perm Y :=
 begin 
    let F := λ (p : perm X), ({
       to_fun := h.1 ∘ p.1 ∘ h.2,
@@ -35,8 +35,7 @@ begin
    have leftinv : left_inverse G F,
    {
       intro p,
-      apply perms_eq_iff_fun_eq _ _,
-      -- simp [right_inverse.id h.3], -- doesnt work ??
+      apply perms_eq_fun_eq _ _,
       calc (G (F p)).to_fun = (h.inv_fun ∘ h.to_fun) ∘ p.to_fun ∘ h.inv_fun ∘ h.to_fun : rfl 
       ... = id ∘ p.to_fun ∘ h.inv_fun ∘ h.to_fun : by rw right_inverse.id h.3
       ... = p.to_fun ∘ (h.inv_fun ∘ h.to_fun) : rfl 
@@ -45,7 +44,7 @@ begin
    have rightinv : right_inverse G F,
    {
       intro p, 
-      apply perms_eq_iff_fun_eq _ _,
+      apply perms_eq_fun_eq _ _,
       calc (F (G p)).to_fun = (h.to_fun ∘ h.inv_fun) ∘ p.to_fun ∘ h.to_fun ∘ h.inv_fun : rfl 
       ... = id ∘ p.to_fun ∘ h.to_fun ∘ h.inv_fun : by rw left_inverse.id h.4
       ... = p.to_fun ∘ (h.to_fun ∘ h.inv_fun) : rfl 
@@ -55,15 +54,21 @@ begin
    {
       intros p q,
       have HH := p * q,
-      apply perms_eq_iff_fun_eq _ _,
+      apply perms_eq_fun_eq _ _,
       apply conj_comp h p.to_fun q.to_fun,
    },
    exact ⟨F, G, leftinv, rightinv, perm_mul⟩,
 end
 
--- lemma group_fin_iso (G : Type u) [group G] [fintype G] : G ≃* fin n := 
--- begin 
---    sorry,
--- end
+def lift_to_perm (G : Type*) [group G] : G →* perm G := {
+   to_fun := λ g, {
+    to_fun    := λ x, g * x,
+    inv_fun   := λ x, g⁻¹ * x,
+    left_inv  := λ h, by simp,
+    right_inv := λ h, by simp
+   },
+   map_one' := by {ext, simp},
+   map_mul' := λ g h, by {ext, simp [mul_assoc _ _ _]},
+}
 
 end equiv.perm
