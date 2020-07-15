@@ -72,21 +72,15 @@ def lift_to_perm (G : Type*) [group G] : G →* perm G := {
 lemma cayleys (G : Type*) [group G] : function.injective (lift_to_perm G).1 := 
 begin
    intros g₁ g₂ h,
-   have h₁ : ∀ (x : G), ((lift_to_perm G).to_fun g₁) x = g₁ * x,
-      intro x,
-      refl,
-   have h₂ : ∀ (x : G), ((lift_to_perm G).to_fun g₂) x = g₂ * x,
-      intro x,
-      refl,
-   suffices H : ∀ (x : G), ((lift_to_perm G).to_fun g₁) x = ((lift_to_perm G).to_fun g₂) x,
+   suffices H : ((lift_to_perm G).to_fun g₁) 1 = ((lift_to_perm G).to_fun g₂) 1,
    {
-      specialize h₁ 1,
-      specialize h₂ 1,
-      specialize H 1,
+      have h₁ : ((lift_to_perm G).to_fun g₁) 1 = g₁ * 1,
+         refl,
+      have h₂ : ((lift_to_perm G).to_fun g₂) 1 = g₂ * 1,
+         refl,
       rw [h₁, h₂] at H,
       exact (mul_left_inj 1).mp H
    },
-   intro x,
    rw h,
 end 
 
