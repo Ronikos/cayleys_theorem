@@ -69,6 +69,27 @@ def lift_to_perm (G : Type*) [group G] : G →* perm G := {
    map_mul' := λ g h, by {ext, simp [mul_assoc _ _ _]},
 }
 
+lemma cayleys (G : Type*) [group G] : function.injective (lift_to_perm G).1 := 
+begin
+   intros g₁ g₂ h,
+   have h₁ : ∀ (x : G), ((lift_to_perm G).to_fun g₁) x = g₁ * x,
+      intro x,
+      refl,
+   have h₂ : ∀ (x : G), ((lift_to_perm G).to_fun g₂) x = g₂ * x,
+      intro x,
+      refl,
+   suffices H : ∀ (x : G), ((lift_to_perm G).to_fun g₁) x = ((lift_to_perm G).to_fun g₂) x,
+   {
+      specialize h₁ 1,
+      specialize h₂ 1,
+      specialize H 1,
+      rw [h₁, h₂] at H,
+      exact (mul_left_inj 1).mp H
+   },
+   intro x,
+   rw h,
+end 
+
 variables {G₁ : Type*} {G₂ : Type*} [group G₁] [group G₂]
 
 def ψ (h : G₁ ≃* G₂): perm G₁ → perm G₂ := λ θ, 
@@ -108,10 +129,7 @@ lemma embedding_diagram_com (h : G₁ ≃* G₂)
      ... = (h.1 g) * (id x) : by rw right_inverse.id h.4,
    have H₂ : (((lift_to_perm G₂).to_fun ∘ h.1) g) x = (h.1 g) * x,
       refl,
-   rwa [H₁, H₂],
+   rw [H₁, H₂],
 end 
-
-
--- (h.1 ∘ (λ x, g * x) ∘ h.2) x = h.1 (g * (h.2 x))
 
 end equiv.perm
