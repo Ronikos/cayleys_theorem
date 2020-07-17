@@ -129,12 +129,12 @@ end
 
 def homomorphism_induces_group (f : G₁ →* G₂) : group (set.range f) :=
 {
-   mul := (*),
+   mul := has_mul.mul,
    mul_assoc := mul_assoc,
-   one := 1,
+   one := has_one.one,
    one_mul := one_mul,
    mul_one := mul_one,
-   inv := λ g, g⁻¹,
+   inv := has_inv.inv,
    mul_left_inv := mul_left_inv,
 }
 
