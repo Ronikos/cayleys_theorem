@@ -4,6 +4,8 @@ import data.zmod.basic
 import data.equiv.basic
 import tactic
 
+import data.set.basic
+
 universes u v
 
 namespace equiv.perm
@@ -16,7 +18,7 @@ begin
    exact congr_fun h x,
 end 
 
-lemma notcayleys {X : Type u} {Y : Type v} (h : X ≃ Y) : perm X ≃* perm Y :=
+def notcayleys {X : Type u} {Y : Type v} (h : X ≃ Y) : perm X ≃* perm Y :=
 begin 
    let F := λ (p : perm X), ({
       to_fun := h.1 ∘ p.1 ∘ h.2,
@@ -124,5 +126,23 @@ lemma embedding_diagram_com (h : G₁ ≃* G₂)
       refl,
    rw [H₁, H₂],
 end 
+
+def homomorphism_induces_group (f : G₁ →* G₂) : group (set.range f) :=
+{
+   mul := λ g h, g * h,
+   mul_assoc := mul_assoc,
+   one := 1,
+   one_mul := one_mul,
+   mul_one := mul_one,
+   inv := λ g, g⁻¹,
+   mul_left_inv := mul_left_inv,
+}
+
+-- def homomorphism_induces_isomorphism (f : G₁ →* G₂) : set.range f →* G₁ :=
+-- {
+--    to_fun := λ ⟨a, b ⟩, ,
+--    map_one' := sorry,
+--    map_mul' := sorry
+-- }
 
 end equiv.perm
