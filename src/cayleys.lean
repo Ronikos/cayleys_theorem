@@ -69,20 +69,19 @@ def lift_to_perm (G : Type*) [group G] : G →* perm G := {
    map_mul' := λ g h, by {ext, simp [mul_assoc _ _ _]},
 }
 
-lemma cayleys (G : Type*) [group G] : function.injective (lift_to_perm G).1 := 
+theorem cayleys (G : Type*) [group G] : ∃ (f : G →* perm G), function.injective f := 
 begin
+   use lift_to_perm G,
    intros g₁ g₂ h,
    suffices H : ((lift_to_perm G).to_fun g₁) 1 = ((lift_to_perm G).to_fun g₂) 1,
    {
-      have h₁ : ((lift_to_perm G).to_fun g₁) 1 = g₁ * 1,
-         refl,
-      have h₂ : ((lift_to_perm G).to_fun g₂) 1 = g₂ * 1,
-         refl,
+      have h₁ : ((lift_to_perm G).to_fun g₁) 1 = g₁ * 1, by refl,
+      have h₂ : ((lift_to_perm G).to_fun g₂) 1 = g₂ * 1, by refl,
       rw [h₁, h₂] at H,
       exact (mul_left_inj 1).mp H
    },
-   rw h,
-end 
+   exact congr_fun (congr_arg coe_fn h) 1,
+end
 
 variables {G₁ : Type*} {G₂ : Type*} [group G₁] [group G₂]
 
