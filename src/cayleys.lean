@@ -138,11 +138,38 @@ def homomorphism_induces_group (f : G₁ →* G₂) : group (set.range f) :=
    mul_left_inv := mul_left_inv,
 }
 
--- def homomorphism_induces_isomorphism (f : G₁ →* G₂) : set.range f →* G₁ :=
--- {
---    to_fun := λ ⟨a, b ⟩, ,
---    map_one' := sorry,
---    map_mul' := sorry
--- }
+#check subtype.rec
+
+noncomputable def injective_hom_induces_iso (f : G₁ →* G₂) (h_inj : function.injective f) : G₁ ≃* set.range f :=
+{
+   to_fun    := λ g, ⟨f g, set.mem_range_self g⟩,
+   inv_fun   := begin 
+      rintro ⟨a, b⟩,
+      choose h hk using b,
+      exact h,
+   end,
+   left_inv  := begin
+      intro x,
+      simp,
+      apply h_inj,
+      have H : f x ∈ set.range f,
+         exact set.mem_range_self x,
+      rw classical.some_spec H,
+   end,
+   right_inv := begin 
+      intro y,
+      ext1,
+      simp,
+      have H : ∃ x, f x = y,
+      {
+         cases y with a b,
+         exact b,
+      },
+      cases H with x hx,
+      rw ←hx,
+      sorry
+   end,
+   map_mul'  := λ x y, by {ext, simp},
+}
 
 end equiv.perm
