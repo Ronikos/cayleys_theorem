@@ -1,5 +1,4 @@
 import algebra.group.basic
-import group_theory.subgroup
 import data.zmod.basic
 import data.equiv.basic
 import tactic
@@ -8,8 +7,7 @@ import data.set.basic
 
 universes u v
 
-namespace equiv.perm
-open equiv function subgroup
+open equiv function set
 
 lemma perms_eq_fun_eq {X : Type u} (p : perm X) (q : perm X) (h : p.to_fun = q.to_fun) : p = q := 
 begin 
@@ -21,42 +19,20 @@ end
 def notcayleys {X : Type u} {Y : Type v} (h : X ≃ Y) : perm X ≃* perm Y :=
 begin 
   let F := λ (p : perm X), ({
-    to_fun := h.1 ∘ p.1 ∘ h.2,
-    inv_fun := h.1 ∘ p.2 ∘ h.2,
-    left_inv := λ y, by simp [left_inverse.id h.3, left_inverse.id p.3, right_inverse.id h.4],
-    right_inv := λ y, by simp [left_inverse.id h.3, left_inverse.id p.4, left_inverse.id h.4],
+    to_fun    := h.1 ∘ p.1 ∘ h.2,
+    inv_fun   := h.1 ∘ p.2 ∘ h.2,
+    left_inv  := λ y, by simp,
+    right_inv := λ y, by simp,
   } : perm Y),
   let G := λ (p : perm Y), ({
-    to_fun := h.2 ∘ p.1 ∘ h.1,
-    inv_fun := h.2 ∘ p.2 ∘ h.1,
-    left_inv := λ y, by simp [right_inverse.id h.4, left_inverse.id p.3, right_inverse.id h.3],
-    right_inv := λ y, by simp [right_inverse.id h.4, left_inverse.id p.4, right_inverse.id h.3],
+    to_fun    := h.2 ∘ p.1 ∘ h.1,
+    inv_fun   := h.2 ∘ p.2 ∘ h.1,
+    left_inv  := λ y, by simp,
+    right_inv := λ y, by simp,
   } : perm X),
-  have leftinv : left_inverse G F,
-  { intro p,
-    apply perms_eq_fun_eq _ _,
-    calc (G (F p)).to_fun 
-          = (h.inv_fun ∘ h.to_fun) ∘ p.to_fun ∘ h.inv_fun ∘ h.to_fun : rfl 
-      ... = id ∘ p.to_fun ∘ h.inv_fun ∘ h.to_fun : by rw right_inverse.id h.3
-      ... = p.to_fun ∘ (h.inv_fun ∘ h.to_fun) : rfl 
-      ... = p.to_fun ∘ id : by rw right_inverse.id h.3,
-  },
-  have rightinv : right_inverse G F,
-  { intro p, 
-    apply perms_eq_fun_eq _ _,
-    calc (F (G p)).to_fun 
-          = (h.to_fun ∘ h.inv_fun) ∘ p.to_fun ∘ h.to_fun ∘ h.inv_fun : rfl 
-      ... = id ∘ p.to_fun ∘ h.to_fun ∘ h.inv_fun : by rw left_inverse.id h.4
-      ... = p.to_fun ∘ (h.to_fun ∘ h.inv_fun) : rfl 
-      ... = p.to_fun ∘ id : by rw left_inverse.id h.4,
-  },
-  have perm_mul : ∀ (x y : perm X), F (x * y) = F x * F y,
-  { intros p q,
-    have HH := p * q,
-    apply perms_eq_fun_eq _ _,
-    apply conj_comp h p.to_fun q.to_fun,
-  },
-  exact ⟨F, G, leftinv, rightinv, perm_mul⟩,
+  exact ⟨F, G, λ x, by {ext, simp}, λ x, by {ext, simp}, 
+         λ p q, by {apply perms_eq_fun_eq (F (p * q)) ((F p) * (F q)), 
+                    apply conj_comp h p.to_fun q.to_fun}⟩,
 end
 
 def lift_to_perm (G : Type*) [group G] : G →* perm G := {
@@ -70,15 +46,15 @@ def lift_to_perm (G : Type*) [group G] : G →* perm G := {
   map_mul' := λ g h, by {ext, simp [mul_assoc _ _ _]},
 }
 
-theorem cayleys (G : Type*) [group G] : ∃ (f : G →* perm G), function.injective f := 
+theorem cayleys (G : Type*) [group G] : ∃ (f : G →* perm G), injective f := 
 begin
   use lift_to_perm G,
   intros g₁ g₂ h,
   suffices H : ((lift_to_perm G).to_fun g₁) 1 = ((lift_to_perm G).to_fun g₂) 1,
-  { have h₁ : ((lift_to_perm G).to_fun g₁) 1 = g₁ * 1, by refl,
-    have h₂ : ((lift_to_perm G).to_fun g₂) 1 = g₂ * 1, by refl,
+  { have h₁ : ((lift_to_perm G).to_fun g₁) 1 = g₁ * 1 := rfl,
+    have h₂ : ((lift_to_perm G).to_fun g₂) 1 = g₂ * 1 := rfl,
     rw [h₁, h₂] at H,
-    exact (mul_left_inj 1).mp H
+    exact (mul_left_inj 1).mp H,
   },
   exact congr_fun (congr_arg coe_fn h) 1,
 end
@@ -123,7 +99,7 @@ lemma embedding_diagram_com (h : G₁ ≃* G₂)
   rw [H₁, H₂],
 end 
 
-def homomorphism_induces_group (f : G₁ →* G₂) : group (set.range f) :=
+def hom_induces_group (f : G₁ →* G₂) : group (range f) :=
 { mul := has_mul.mul,
   mul_assoc := mul_assoc,
   one := has_one.one,
@@ -133,7 +109,7 @@ def homomorphism_induces_group (f : G₁ →* G₂) : group (set.range f) :=
   mul_left_inv := mul_left_inv,
 }
 
-noncomputable def inj_hom_induces_iso (f : G₁ →* G₂) (h_inj : function.injective f) : G₁ ≃* set.range f :=
+noncomputable def inj_hom_induces_iso (f : G₁ →* G₂) (h_inj : injective f) : G₁ ≃* range f :=
 { to_fun    := λ g, ⟨f g, set.mem_range_self g⟩,
   inv_fun   := begin 
     rintro ⟨a, b⟩,
@@ -144,7 +120,7 @@ noncomputable def inj_hom_induces_iso (f : G₁ →* G₂) (h_inj : function.inj
     intro x,
     simp,
     apply h_inj,
-    have H : f x ∈ set.range f := set.mem_range_self x,
+    have H : f x ∈ range f := set.mem_range_self x,
     rw classical.some_spec H,
   end,
   right_inv := begin 
@@ -157,5 +133,3 @@ noncomputable def inj_hom_induces_iso (f : G₁ →* G₂) (h_inj : function.inj
   end,
   map_mul'  := λ x y, by {ext, simp},
 }
-
-end equiv.perm
