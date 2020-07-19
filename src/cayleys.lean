@@ -29,7 +29,7 @@ def lift_to_perm (G : Type*) [group G] : G →* perm G := {
   map_mul' := λ g h, by {ext, simp [mul_assoc _ _ _]},
 }
 
-lemma inj_lift_to_perm {G : Type*} [group G] : injective (lift_to_perm G) := 
+lemma lift_to_perm_inj {G : Type*} [group G] : injective (lift_to_perm G) := 
 begin 
   intros g₁ g₂ h,
   have H : ((lift_to_perm G) g₁) 1 = ((lift_to_perm G) g₂) 1, rw h,
@@ -58,7 +58,7 @@ end
 theorem cayleys (G : Type*) [group G] : ∃ (f : G →* perm G), injective f := 
 begin
   use lift_to_perm G,
-  exact inj_lift_to_perm,
+  exact lift_to_perm_inj,
 end
 
 variables {G₁ : Type*} {G₂ : Type*} [group G₁] [group G₂]
@@ -91,4 +91,4 @@ def inj_hom_induces_iso (f : G₁ →* G₂) (h_inj : injective f) : G₁ ≃* r
 
 noncomputable 
 theorem cayleys2 {G : Type*} [group G] : G ≃* range (lift_to_perm G) 
-:= inj_hom_induces_iso (lift_to_perm G) inj_lift_to_perm
+:= inj_hom_induces_iso (lift_to_perm G) lift_to_perm_inj
