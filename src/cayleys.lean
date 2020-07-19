@@ -9,12 +9,32 @@ universes u v
 
 open equiv function set
 
+variables (G : Type u) [group G]
+
 lemma perms_eq_fun_eq {X : Type u} (p : perm X) (q : perm X) (h : p.to_fun = q.to_fun) : p = q := 
 begin 
   apply perm.ext,
   intro x,
   exact congr_fun h x,
 end 
+
+def lift_to_perm (G : Type*) [group G] : G →* perm G := {
+  to_fun := λ g, {
+    to_fun    := λ x, g * x,
+    inv_fun   := λ x, g⁻¹ * x,
+    left_inv  := λ h, by simp,
+    right_inv := λ h, by simp
+  },
+  map_one' := by {ext, simp},
+  map_mul' := λ g h, by {ext, simp [mul_assoc _ _ _]},
+}
+
+lemma inj_lift_to_perm {G : Type*} [group G] : injective (lift_to_perm G) := 
+begin 
+  intros g₁ g₂ h,
+  have H : ((lift_to_perm G) g₁) 1 = ((lift_to_perm G) g₂) 1, rw h,
+  exact (mul_left_inj 1).mp H,
+end
 
 def notcayleys {X : Type u} {Y : Type v} (h : X ≃ Y) : perm X ≃* perm Y :=
 begin 
@@ -35,33 +55,16 @@ begin
                     apply conj_comp h p.to_fun q.to_fun}⟩,
 end
 
-def lift_to_perm (G : Type*) [group G] : G →* perm G := {
-  to_fun := λ g, {
-    to_fun    := λ x, g * x,
-    inv_fun   := λ x, g⁻¹ * x,
-    left_inv  := λ h, by simp,
-    right_inv := λ h, by simp
-  },
-  map_one' := by {ext, simp},
-  map_mul' := λ g h, by {ext, simp [mul_assoc _ _ _]},
-}
-
 theorem cayleys (G : Type*) [group G] : ∃ (f : G →* perm G), injective f := 
 begin
   use lift_to_perm G,
-  intros g₁ g₂ h,
-  suffices H : ((lift_to_perm G).to_fun g₁) 1 = ((lift_to_perm G).to_fun g₂) 1,
-  { have h₁ : ((lift_to_perm G).to_fun g₁) 1 = g₁ * 1 := rfl,
-    have h₂ : ((lift_to_perm G).to_fun g₂) 1 = g₂ * 1 := rfl,
-    rw [h₁, h₂] at H,
-    exact (mul_left_inj 1).mp H,
-  },
-  exact congr_fun (congr_arg coe_fn h) 1,
+  exact inj_lift_to_perm,
 end
 
 variables {G₁ : Type*} {G₂ : Type*} [group G₁] [group G₂]
 
-noncomputable def inj_hom_induces_iso (f : G₁ →* G₂) (h_inj : injective f) : G₁ ≃* range f :=
+noncomputable 
+def inj_hom_induces_iso (f : G₁ →* G₂) (h_inj : injective f) : G₁ ≃* range f :=
 { to_fun    := λ g, ⟨f g, set.mem_range_self g⟩,
   inv_fun   := begin 
     rintro ⟨a, b⟩,
@@ -85,3 +88,7 @@ noncomputable def inj_hom_induces_iso (f : G₁ →* G₂) (h_inj : injective f)
   end,
   map_mul'  := λ x y, by {ext, simp},
 }
+
+noncomputable 
+theorem cayleys2 {G : Type*} [group G] : G ≃* range (lift_to_perm G) 
+:= inj_hom_induces_iso (lift_to_perm G) inj_lift_to_perm
