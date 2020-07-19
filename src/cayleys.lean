@@ -36,24 +36,23 @@ begin
   exact (mul_left_inj 1).mp H,
 end
 
-def notcayleys {X : Type u} {Y : Type v} (h : X ≃ Y) : perm X ≃* perm Y :=
-begin 
-  let F := λ (p : perm X), ({
-    to_fun    := h.1 ∘ p.1 ∘ h.2,
-    inv_fun   := h.1 ∘ p.2 ∘ h.2,
-    left_inv  := λ y, by simp,
-    right_inv := λ y, by simp,
-  } : perm Y),
-  let G := λ (p : perm Y), ({
-    to_fun    := h.2 ∘ p.1 ∘ h.1,
-    inv_fun   := h.2 ∘ p.2 ∘ h.1,
-    left_inv  := λ y, by simp,
-    right_inv := λ y, by simp,
-  } : perm X),
-  exact ⟨F, G, λ x, by {ext, simp}, λ x, by {ext, simp}, 
-         λ p q, by {apply perms_eq_fun_eq (F (p * q)) ((F p) * (F q)), 
-                    apply conj_comp h p.to_fun q.to_fun}⟩,
-end
+def iso_induces_perm_iso {X : Type u} {Y : Type v} : X ≃ Y → perm X ≃* perm Y := λ h,
+{ to_fun    := λ p, ({
+                 to_fun    := h.1 ∘ p.1 ∘ h.2,
+                 inv_fun   := h.1 ∘ p.2 ∘ h.2,
+                 left_inv  := λ y, by simp,
+                 right_inv := λ y, by simp,
+               } : perm Y),
+  inv_fun   := λ (p : perm Y), ({
+                 to_fun    := h.2 ∘ p.1 ∘ h.1,
+                 inv_fun   := h.2 ∘ p.2 ∘ h.1,
+                 left_inv  := λ y, by simp,
+                 right_inv := λ y, by simp,
+               } : perm X),
+  left_inv  := λ x, by {ext, simp},
+  right_inv := λ x, by {ext, simp},
+  map_mul'  := λ p q, perms_eq_fun_eq _ _ (conj_comp h p.to_fun q.to_fun)
+}
 
 theorem cayleys (G : Type*) [group G] : ∃ (f : G →* perm G), injective f := 
 begin
@@ -91,4 +90,4 @@ def inj_hom_induces_iso (f : G₁ →* G₂) (h_inj : injective f) : G₁ ≃* r
 
 noncomputable 
 theorem cayleys2 {G : Type*} [group G] : G ≃* range (lift_to_perm G) 
-:= inj_hom_induces_iso (lift_to_perm G) lift_to_perm_inj
+  := inj_hom_induces_iso (lift_to_perm G) lift_to_perm_inj
